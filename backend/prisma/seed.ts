@@ -1,6 +1,19 @@
 import { PrismaClient, DrinkType, Tier } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js'
 
 const prisma = new PrismaClient()
+
+// Initialize Supabase client
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ Missing Supabase environment variables')
+  console.error('Please set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in backend/.env')
+  process.exit(1)
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function main() {
   console.log('🌱 Starting database seed...')
@@ -90,30 +103,64 @@ async function main() {
     })
   ])
 
-  // Create sample users
+  // Create Supabase Auth users and database records
   const users = await Promise.all([
-    prisma.user.create({
-      data: {
+    // Create admin user
+    (async () => {
+      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
         email: 'admin@restaurant.com',
-        role: 'ADMIN',
-        name: 'Admin User',
-        supabaseId: 'admin-supabase-id'
+        password: 'admin123',
+        email_confirm: true,
+        user_metadata: { name: 'Admin User' }
+      })
+
+      if (authError) {
+        console.error('❌ Error creating admin user:', authError)
+        return null
       }
-    }),
-    prisma.user.create({
-      data: {
+
+      return prisma.user.create({
+        data: {
+          email: 'admin@restaurant.com',
+          role: 'ADMIN',
+          name: 'Admin User',
+          supabaseId: authUser.user.id
+        }
+      })
+    })(),
+
+    // Create staff user
+    (async () => {
+      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
         email: 'bartender@restaurant.com',
-        role: 'STAFF',
-        name: 'Bartender',
-        supabaseId: 'staff-supabase-id'
+        password: 'staff123',
+        email_confirm: true,
+        user_metadata: { name: 'Bartender' }
+      })
+
+      if (authError) {
+        console.error('❌ Error creating staff user:', authError)
+        return null
       }
-    })
+
+      return prisma.user.create({
+        data: {
+          email: 'bartender@restaurant.com',
+          role: 'STAFF',
+          name: 'Bartender',
+          supabaseId: authUser.user.id
+        }
+      })
+    })()
   ])
 
   console.log(`✅ Created ${cocktails.length} cocktails`)
   console.log(`✅ Created ${wines.length} wines`)
-  console.log(`✅ Created ${users.length} users`)
+  console.log(`✅ Created ${users.filter(Boolean).length} users`)
   console.log('🎉 Database seeding completed!')
+  console.log('\n📋 Login Credentials:')
+  console.log('Admin: admin@restaurant.com / admin123')
+  console.log('Staff: bartender@restaurant.com / staff123')
 }
 
 main()

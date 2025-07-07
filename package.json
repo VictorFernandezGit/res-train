@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@types/node": "^24.0.10",
+    "next": "^15.3.5"
+  }
+}

@@ -1,8 +1,28 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+
+// Check if Supabase is properly configured
+const isSupabaseConfigured = () => {
+  return process.env.NEXT_PUBLIC_SUPABASE_URL && 
+         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+         process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_project_url_here' &&
+         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'your_anon_key_here'
+}
+
+// Try to import Supabase, but don't fail if it's not configured
+let createClient: any = null
+if (isSupabaseConfigured()) {
+  try {
+    const supabaseModule = require('../../lib/supabase')
+    createClient = supabaseModule.createClient
+  } catch (error) {
+    console.warn('Supabase import failed, using mock authentication')
+  }
+} else {
+  console.log('Supabase not configured, using demo mode')
+}
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -10,7 +30,6 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,20 +37,31 @@ export default function LoginForm() {
     setError(null)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+      if (createClient && isSupabaseConfigured()) {
+        const supabase = createClient()
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
 
-      if (error) {
-        setError(error.message)
-        return
-      }
+        if (error) {
+          setError(error.message)
+          return
+        }
 
-      if (data.user) {
-        // Redirect based on user role (will be handled by middleware)
-        router.push('/dashboard')
-        router.refresh()
+        if (data.user) {
+          router.push('/dashboard')
+          router.refresh()
+        }
+      } else {
+        // Demo authentication - works with seeded database records
+        if (email === 'admin@restaurant.com' || email === 'bartender@restaurant.com') {
+          // Simulate loading
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          router.push('/dashboard')
+        } else {
+          setError('Invalid credentials. Use admin@restaurant.com or bartender@restaurant.com')
+        }
       }
     } catch (err) {
       setError('An unexpected error occurred')
@@ -105,12 +135,12 @@ export default function LoginForm() {
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Demo credentials:
+              Login credentials:
             </p>
             <p className="text-xs text-gray-500 mt-1">
-              Admin: admin@restaurant.com<br />
-              Staff: bartender@restaurant.com<br />
-              Password: (check your seed data)
+              Admin: admin@restaurant.com / admin123<br />
+              Staff: bartender@restaurant.com / staff123<br />
+              {!isSupabaseConfigured() && '(Demo mode - any password works)'}
             </p>
           </div>
         </form>
