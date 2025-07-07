@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for Supabase Auth integration
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      UserRole @default(STAFF)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Supabase Auth fields
+  supabaseId String? @unique
+  name       String?
+
+  @@map("users")
+}
+
+// Cocktail model
+model Cocktail {
+  id          String   @id @default(cuid())
+  name        String
+  type        DrinkType
+  baseLiquor  String
+  tier        Tier
+  ingredients String[] // Array of ingredient strings
+  description String
+  recipe      String   // Steps or instructions
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cocktails")
+}
+
+// Wine model
+model Wine {
+  id          String   @id @default(cuid())
+  name        String
+  type        DrinkType
+  grapeVariety String
+  tier        Tier
+  ingredients String[] // Array of ingredient strings (for blends)
+  description String
+  recipe      String?  // Optional winemaking notes
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("wines")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum DrinkType {
+  COCKTAIL
+  WINE
+}
+
+enum Tier {
+  LOW
+  MEDIUM
+  HIGH
+}
