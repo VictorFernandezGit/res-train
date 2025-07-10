@@ -1,0 +1,10 @@
+# For reference only: Node.js dependencies (install with npm install)
+@prisma/client==5.10.0
+@supabase/supabase-js==2.50.3
+dotenv==16.4.0
+prisma==5.10.0
+
+# Dev dependencies
+@types/node==20.0.0
+ts-node==10.9.0
+typescript==5.0.0 
