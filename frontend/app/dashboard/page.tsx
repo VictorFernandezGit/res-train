@@ -1,6 +1,27 @@
+'use client'
 import Link from 'next/link'
+import React, { useEffect, useState } from 'react';
+import LiquorList from '../../components/dashboard/LiquorList';
+import LiquorForm from '../../components/dashboard/LiquorForm';
 
 export default function DashboardPage() {
+  const [customLiquors, setCustomLiquors] = useState([]);
+  const [cocktaildbLiquors, setCocktaildbLiquors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchLiquors = async () => {
+    setLoading(true);
+    const res = await fetch('/api/liquors');
+    const data = await res.json();
+    setCustomLiquors(data.custom || []);
+    setCocktaildbLiquors(data.cocktaildb || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchLiquors();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -22,6 +43,12 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+        <LiquorForm onAdd={fetchLiquors} />
+        {loading ? (
+          <div className="text-center mt-8 text-gray-500">Loading liquors...</div>
+        ) : (
+          <LiquorList customLiquors={customLiquors} cocktaildbLiquors={cocktaildbLiquors} />
+        )}
       </div>
     </div>
   )
