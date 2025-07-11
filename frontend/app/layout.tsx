@@ -1,4 +1,7 @@
 import './globals.css'
+import type React from "react"
+import "@/app/globals.css"
+import { Inter } from "next/font/google"
 
 export const metadata = {
   title: 'Next.js',
@@ -16,3 +19,4 @@ export default function RootLayout({
     </html>
   )
 }
+
