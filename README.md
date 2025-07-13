@@ -1,7 +1,7 @@
 # Restaurant Training Portal
 
 ## Project Overview
-A full-stack monorepo for a restaurant training portal, featuring authentication, cocktail and wine management, and a custom liquor database with integration to TheCocktailDB.
+A full-stack monorepo for a restaurant training portal, featuring authentication, cocktail and wine management, and a custom liquor database with integration.
 
 ---
 
