@@ -85,12 +85,6 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## TheCocktailDB Integration
-- The app fetches liquor/ingredient data from [TheCocktailDB](https://www.thecocktaildb.com/api.php).
-- You can only search by ingredient, not by specific brand.
-
----
-
 ## Development Notes
 - Use the `@/` alias for absolute imports in the frontend (see `frontend/tsconfig.json`).
 - Use relative imports in the backend.
