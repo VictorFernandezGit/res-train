@@ -1,23 +1,43 @@
+"use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 
+type Quiz = {
+  id: string;
+  title: string;
+  questions: QuizQuestion[];
+};
+
+type QuizQuestion = {
+  id: string;
+  question: string;
+  options: string[];
+  answer: string;
+  explanation?: string;
+};
+
+type QuizResult = {
+  score: number;
+  total: number;
+};
+
 export default function QuizPage() {
   const router = useRouter();
-  const { wineId } = router.query;
-  const [quiz, setQuiz] = useState(null);
-  const [answers, setAnswers] = useState([]);
+  const { quizId } = router.query;
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [answers, setAnswers] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<QuizResult | null>(null);
 
   useEffect(() => {
-    if (wineId) {
-      fetch(`/api/quiz/${wineId}`)
+    if (quizId) {
+      fetch(`/api/quiz/${quizId}`)
         .then(res => res.json())
         .then(data => setQuiz(data.quiz));
     }
-  }, [wineId]);
+  }, [quizId]);
 
-  const handleChange = (qIdx, value) => {
+  const handleChange = (qIdx: number, value: string) => {
     setAnswers(prev => {
       const copy = [...prev];
       copy[qIdx] = value;
@@ -25,7 +45,7 @@ export default function QuizPage() {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quiz) return;
     // TODO: Replace with actual userId from auth
@@ -36,7 +56,7 @@ export default function QuizPage() {
       body: JSON.stringify({ userId, answers }),
     });
     const data = await res.json();
-    setResult(data);
+    setResult({ score: data.score, total: data.total });
     setSubmitted(true);
   };
 
