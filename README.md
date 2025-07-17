@@ -1,7 +1,7 @@
 # Restaurant Training Portal
 
 ## Project Overview
-A full-stack monorepo for a restaurant training portal, featuring authentication, cocktail and wine management, and a custom liquor database with integration to TheCocktailDB.
+A full-stack monorepo for a restaurant training portal, featuring authentication, cocktail and wine management, and a custom liquor database with integration.
 
 ---
 
@@ -82,12 +82,6 @@ Visit [http://localhost:3000](http://localhost:3000)
 - **POST /api/liquors**: Adds a custom liquor to the database.
 
 > **Note:** In production, move API logic to the backend for security and scalability.
-
----
-
-## TheCocktailDB Integration
-- The app fetches liquor/ingredient data from [TheCocktailDB](https://www.thecocktaildb.com/api.php).
-- You can only search by ingredient, not by specific brand.
 
 ---
 
