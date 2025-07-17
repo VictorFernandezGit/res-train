@@ -26,6 +26,8 @@ model User {
   supabaseId String? @unique
   name       String?
 
+  quizResults QuizResult[]
+
   @@map("users")
 }
 
@@ -61,6 +63,8 @@ model Wine {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  quizzes     Quiz[]
+
   @@map("wines")
 }
 
@@ -75,6 +79,44 @@ model Liquor {
   updatedAt   DateTime @updatedAt
 
   @@map("liquors")
+}
+
+// Quiz for Wine
+model Quiz {
+  id        String         @id @default(cuid())
+  wine      Wine           @relation(fields: [wineId], references: [id])
+  wineId    String
+  title     String
+  createdAt DateTime       @default(now())
+  questions QuizQuestion[]
+  results   QuizResult[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id         String   @id @default(cuid())
+  quiz       Quiz     @relation(fields: [quizId], references: [id])
+  quizId     String
+  question   String
+  options    String[] // Multiple choice options
+  answer     String   // Correct answer
+  explanation String? // Optional explanation for answer
+
+  @@map("quiz_questions")
+}
+
+model QuizResult {
+  id         String   @id @default(cuid())
+  quiz       Quiz     @relation(fields: [quizId], references: [id])
+  quizId     String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  answers    String[] // User's selected answers (ordered by question)
+  score      Int
+  takenAt    DateTime @default(now())
+
+  @@map("quiz_results")
 }
 
 // Enums
