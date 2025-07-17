@@ -1,6 +1,7 @@
 "use client"
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
+import Image from 'next/image';
 
 function useFadeInOnScroll() {
   const ref = useRef<HTMLDivElement>(null);
@@ -54,12 +55,13 @@ export default function Home() {
         </div>
         <div className="w-full max-w-2xl h-72 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl flex items-center justify-center shadow-inner border border-indigo-200 animate-pulse-slow">
           {/* Placeholder for hero visual/illustration */}
-          <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="180" height="180" rx="36" fill="#EEF2FF"/>
-            <path d="M40 120c0-22 18-40 40-40s40 18 40 40" stroke="#6366F1" strokeWidth="6" strokeLinecap="round"/>
-            <circle cx="90" cy="80" r="24" fill="#A5B4FC"/>
-            <rect x="70" y="130" width="40" height="10" rx="5" fill="#6366F1"/>
-          </svg>
+          <Image
+            className="dark:invert"
+            src="/next.svg"
+            alt="Next.js logo"
+            width={100}
+            height={100}
+          />
         </div>
       </section>
 
