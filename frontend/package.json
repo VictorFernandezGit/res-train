@@ -2,6 +2,9 @@
   "name": "with-tailwindcss",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "schema": "../backend/prisma/schema.prisma"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -22,7 +25,8 @@
     "next": "^15.3.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.4",

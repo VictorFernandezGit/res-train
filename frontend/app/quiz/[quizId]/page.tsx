@@ -11,9 +11,14 @@ type Quiz = {
 type QuizQuestion = {
   id: string;
   question: string;
-  options: string[];
-  answer: string;
+  options: QuizOption[];
   explanation?: string;
+};
+
+type QuizOption = {
+  id: string;
+  optionText: string;
+  isCorrect: boolean;
 };
 
 type QuizResult = {
@@ -37,10 +42,10 @@ export default function QuizPage() {
     }
   }, [quizId]);
 
-  const handleChange = (qIdx: number, value: string) => {
+  const handleChange = (qIdx: number, optionId: string) => {
     setAnswers(prev => {
       const copy = [...prev];
-      copy[qIdx] = value;
+      copy[qIdx] = optionId;
       return copy;
     });
   };
@@ -69,17 +74,17 @@ export default function QuizPage() {
         {quiz.questions.map((q, idx) => (
           <div key={q.id} style={{ marginBottom: 24 }}>
             <div>{q.question}</div>
-            {q.options.map((opt, oIdx) => (
-              <label key={oIdx} style={{ display: 'block' }}>
+            {q.options.map((option) => (
+              <label key={option.id} style={{ display: 'block' }}>
                 <input
                   type="radio"
                   name={`q${idx}`}
-                  value={opt}
-                  checked={answers[idx] === opt}
-                  onChange={() => handleChange(idx, opt)}
+                  value={option.id}
+                  checked={answers[idx] === option.id}
+                  onChange={() => handleChange(idx, option.id)}
                   disabled={submitted}
                 />
-                {opt}
+                {option.optionText}
               </label>
             ))}
           </div>
