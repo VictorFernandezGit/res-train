@@ -7,9 +7,10 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "postinstall": "prisma generate --schema=../backend/prisma/schema.prisma"
+    
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",
