@@ -1,13 +1,17 @@
 "use client";
 
+// TODO: Switch to useActionState when upgrading to React 19/Next.js 15.4+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
 import { useFormState } from "react-dom";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { registerAdmin } from "@/app/actions/registerAdmin";
+import { registerAdmin, AdminSignupState } from "@/app/actions/registerAdmin";
 
 export default function AdminSignupForm() {
   const router = useRouter();
-  const [state, formAction] = useFormState(registerAdmin, { error: null });
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  const [state, formAction] = useFormState<AdminSignupState, FormData>(registerAdmin, { error: null });
 
   useEffect(() => {
     if (state?.success) {

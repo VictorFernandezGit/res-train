@@ -3,14 +3,19 @@
 import { createClient } from "@supabase/supabase-js";
 import { adminSignupSchema } from "@/lib/validations";
 
+export type AdminSignupState = {
+  error: string | null;
+  success?: boolean;
+};
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function registerAdmin(
-  prevState: { error: string | null; success?: boolean },
+  prevState: AdminSignupState,
   formData: FormData
-): Promise<{ error: string | null; success?: boolean }> {
+): Promise<AdminSignupState> {
   try {
     const rawData = {
       name: formData.get("name") as string,
