@@ -34,9 +34,6 @@
     "autoprefixer": "10.4.17"
   },
   "devDependencies": {
-    "tailwindcss": "3.4.3",
-    "postcss": "8.4.38",
-    "autoprefixer": "10.4.17",
     "prisma": "^6.11.1",
     "typescript": "5.8.3"
   }
