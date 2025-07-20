@@ -44,8 +44,14 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
-    // If user is not signed in and the current path is not /login, redirect to /login
-    if (!user && request.nextUrl.pathname !== '/login') {
+    // Only protect these routes
+    const protectedRoutes = ['/dashboard', '/admin', '/admin/dashboard']
+    if (
+      !user &&
+      protectedRoutes.some((route) =>
+        request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith(route + '/')
+      )
+    ) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
@@ -71,6 +77,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 } 
