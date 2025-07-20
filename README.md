@@ -92,5 +92,11 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 ---
 
+## Hosting
+
+- hosting services: vercel
+
+---
+
 ## License
 MIT 
