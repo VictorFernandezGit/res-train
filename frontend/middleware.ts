@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     // Only protect these routes
-    const protectedRoutes = ['/dashboard', '/admin', '/admin/dashboard']
+    const protectedRoutes = ['/dashboard', '/admin', '/admin/dashboard', '/admin/signup']
     if (
       !user &&
       protectedRoutes.some((route) =>
