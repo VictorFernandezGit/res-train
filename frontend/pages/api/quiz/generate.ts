@@ -46,9 +46,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { wineId, title } = req.body;
+  const { wineId, title, orgId } = req.body;
   if (!wineId) {
     return res.status(400).json({ error: 'wineId is required' });
+  }
+  if (!orgId) {
+    return res.status(400).json({ error: 'orgId is required' });
   }
 
   // Fetch wine data
@@ -68,16 +71,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     data: {
       wineId: wine.id,
       title: title || `${wine.name} Quiz`,
+      orgId: orgId,
       questions: {
         create: questions.map(q => ({
           question: q.question,
-          options: q.options,
-          answer: q.answer,
           explanation: q.explanation,
+          options: {
+            create: q.options.map(option => ({
+              optionText: option,
+              isCorrect: option === q.answer
+            }))
+          }
         })),
       },
     },
-    include: { questions: true },
+    include: { 
+      questions: {
+        include: {
+          options: true
+        }
+      } 
+    },
   });
 
   return res.status(201).json({ quiz });

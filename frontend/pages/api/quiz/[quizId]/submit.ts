@@ -19,10 +19,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'answers must be an array' });
   }
 
-  // Fetch quiz and questions
+  // Fetch quiz and questions with options
   const quiz = await prisma.quiz.findUnique({
     where: { id: quizId },
-    include: { questions: true },
+    include: { 
+      questions: {
+        include: {
+          options: true
+        }
+      } 
+    },
   });
   if (!quiz) {
     return res.status(404).json({ error: 'Quiz not found' });
@@ -30,9 +36,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Calculate score
   let score = 0;
-  quiz.questions.forEach((q, idx) => {
-    if (answers[idx] && answers[idx] === q.answer) {
-      score++;
+  quiz.questions.forEach((question, idx) => {
+    const selectedOptionId = answers[idx];
+    if (selectedOptionId) {
+      const selectedOption = question.options.find(option => option.id === selectedOptionId);
+      if (selectedOption && selectedOption.isCorrect) {
+        score++;
+      }
     }
   });
 
@@ -41,7 +51,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     data: {
       quizId,
       userId,
-      answers,
       score,
     },
   });

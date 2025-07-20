@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,125 +7,168 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model for Supabase Auth integration
+model Org {
+  id        String     @id @default(cuid())
+  name      String
+  createdAt DateTime   @default(now())
+  cocktails Cocktail[]
+  lessons   Lesson[]
+  liquors   Liquor[]
+  modules   Module[]
+  quizzes   Quiz[]
+  users     User[]
+  wines     Wine[]
+}
+
 model User {
-  id        String   @id @default(cuid())
-  ord_id    String    
-  email     String   @unique
-  role      UserRole @default(STAFF)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Supabase Auth fields
-  supabaseId String? @unique
-  name       String?
-
+  id          String             @id @default(cuid())
+  email       String             @unique
+  name        String?
+  role        UserRole           @default(STAFF)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  supabaseId  String?            @unique
+  orgId       String
+  progress    EmployeeProgress[]
   quizResults QuizResult[]
-
-  @@map("users")
+  org         Org                @relation(fields: [orgId], references: [id])
 }
 
-// Cocktail model
-model Cocktail {
-  id          String   @id @default(cuid())
-  org_id      String
-  name        String
-  type        DrinkType
-  baseLiquor  String
-  tier        Tier
-  ingredients String[] // Array of ingredient strings
-  description String
-  recipe      String   // Steps or instructions
-  imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("cocktails")
-}
-
-// Wine model
 model Wine {
-  id          String   @id @default(cuid())
-  name        String
-  type        DrinkType
+  id           String    @id @default(cuid())
+  name         String
+  type         DrinkType
   grapeVariety String
-  tier        Tier
-  ingredients String[] // Array of ingredient strings (for blends)
-  description String
-  recipe      String?  // Optional winemaking notes
-  imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  quizzes     Quiz[]
-
-  @@map("wines")
+  tier         Tier
+  description  String
+  imageUrl     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  orgId        String
+  quizzes      Quiz[]
+  org          Org       @relation(fields: [orgId], references: [id])
 }
 
-// Liquor model for custom liquors
 model Liquor {
   id          String   @id @default(cuid())
   name        String   @unique
-  type        String   // e.g., Vodka, Gin, Rum, etc.
+  type        String
   description String?
   imageUrl    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  @@map("liquors")
+  orgId       String
+  org         Org      @relation(fields: [orgId], references: [id])
 }
 
-// Quiz for Wine
+model Cocktail {
+  id          String               @id @default(cuid())
+  name        String
+  baseLiquor  String
+  type        DrinkType
+  tier        Tier
+  description String
+  recipe      String
+  imageUrl    String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  orgId       String
+  org         Org                  @relation(fields: [orgId], references: [id])
+  ingredients CocktailIngredient[]
+}
+
+model CocktailIngredient {
+  id         String   @id @default(cuid())
+  name       String
+  cocktailId String
+  cocktail   Cocktail @relation(fields: [cocktailId], references: [id])
+}
+
+model Module {
+  id      String   @id @default(cuid())
+  title   String
+  orgId   String
+  lessons Lesson[]
+  org     Org      @relation(fields: [orgId], references: [id])
+}
+
+model Lesson {
+  id       String             @id @default(cuid())
+  title    String
+  content  String
+  mediaUrl String?
+  moduleId String
+  orgId    String
+  progress EmployeeProgress[]
+  module   Module             @relation(fields: [moduleId], references: [id])
+  org      Org                @relation(fields: [orgId], references: [id])
+  quizzes  Quiz[]
+}
+
+model EmployeeProgress {
+  id          String    @id @default(cuid())
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  userId      String
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+}
+
 model Quiz {
   id        String         @id @default(cuid())
-  wine      Wine           @relation(fields: [wineId], references: [id])
-  wineId    String
   title     String
   createdAt DateTime       @default(now())
+  lessonId  String
+  wineId    String?
+  orgId     String
+  lesson    Lesson         @relation(fields: [lessonId], references: [id])
+  org       Org            @relation(fields: [orgId], references: [id])
+  wine      Wine?          @relation(fields: [wineId], references: [id])
   questions QuizQuestion[]
   results   QuizResult[]
-
-  @@map("quizzes")
 }
 
 model QuizQuestion {
-  id         String   @id @default(cuid())
-  quiz       Quiz     @relation(fields: [quizId], references: [id])
-  quizId     String
-  question   String
-  options    String[] // Multiple choice options
-  answer     String   // Correct answer
-  explanation String? // Optional explanation for answer
+  id          String       @id @default(cuid())
+  question    String
+  explanation String?
+  quizId      String
+  options     QuizOption[]
+  quiz        Quiz         @relation(fields: [quizId], references: [id])
+}
 
-  @@map("quiz_questions")
+model QuizOption {
+  id         String       @id @default(cuid())
+  optionText String
+  isCorrect  Boolean
+  questionId String
+  question   QuizQuestion @relation(fields: [questionId], references: [id])
 }
 
 model QuizResult {
-  id         String   @id @default(cuid())
-  quiz       Quiz     @relation(fields: [quizId], references: [id])
-  quizId     String
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String
-  answers    String[] // User's selected answers (ordered by question)
-  score      Int
-  takenAt    DateTime @default(now())
-
-  @@map("quiz_results")
+  id      String   @id @default(cuid())
+  score   Int
+  takenAt DateTime @default(now())
+  quizId  String
+  userId  String
+  quiz    Quiz     @relation(fields: [quizId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
 }
 
-// Enums
 enum UserRole {
   ADMIN
   STAFF
-}
-
-enum DrinkType {
-  COCKTAIL
-  WINE
+  MANAGER
 }
 
 enum Tier {
   LOW
   MEDIUM
   HIGH
+}
+
+enum DrinkType {
+  COCKTAIL
+  WINE
 }

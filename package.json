@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "@types/node": "^24.0.10",
-    "next": "^15.3.5"
+    "next": "^15.3.5",
+    "prisma": "^5.22.0"
   }
 }
