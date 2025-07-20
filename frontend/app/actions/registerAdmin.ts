@@ -1,5 +1,5 @@
 "use server";
-
+import { PrismaClient } from "@prisma/client"
 import { createClient } from "@supabase/supabase-js";
 import { adminSignupSchema } from "@/lib/validations";
 

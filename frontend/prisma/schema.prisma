@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "node_modules/@prisma/client"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Org {
+  id        String     @id @default(cuid())
+  name      String
+  createdAt DateTime   @default(now())
+  cocktails Cocktail[]
+  lessons   Lesson[]
+  liquors   Liquor[]
+  modules   Module[]
+  quizzes   Quiz[]
+  users     User[]
+  wines     Wine[]
+}
+
+model User {
+  id          String             @id @default(cuid())
+  email       String             @unique
+  name        String?
+  role        UserRole           @default(STAFF)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  supabaseId  String?            @unique
+  orgId       String
+  progress    EmployeeProgress[]
+  quizResults QuizResult[]
+  org         Org                @relation(fields: [orgId], references: [id])
+}
+
+model Wine {
+  id           String    @id @default(cuid())
+  name         String
+  type         DrinkType
+  grapeVariety String
+  tier         Tier
+  description  String
+  imageUrl     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  orgId        String
+  quizzes      Quiz[]
+  org          Org       @relation(fields: [orgId], references: [id])
+}
+
+model Liquor {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  orgId       String
+  org         Org      @relation(fields: [orgId], references: [id])
+}
+
+model Cocktail {
+  id          String               @id @default(cuid())
+  name        String
+  baseLiquor  String
+  type        DrinkType
+  tier        Tier
+  description String
+  recipe      String
+  imageUrl    String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  orgId       String
+  org         Org                  @relation(fields: [orgId], references: [id])
+  ingredients CocktailIngredient[]
+}
+
+model CocktailIngredient {
+  id         String   @id @default(cuid())
+  name       String
+  cocktailId String
+  cocktail   Cocktail @relation(fields: [cocktailId], references: [id])
+}
+
+model Module {
+  id      String   @id @default(cuid())
+  title   String
+  orgId   String
+  lessons Lesson[]
+  org     Org      @relation(fields: [orgId], references: [id])
+}
+
+model Lesson {
+  id       String             @id @default(cuid())
+  title    String
+  content  String
+  mediaUrl String?
+  moduleId String
+  orgId    String
+  progress EmployeeProgress[]
+  module   Module             @relation(fields: [moduleId], references: [id])
+  org      Org                @relation(fields: [orgId], references: [id])
+  quizzes  Quiz[]
+}
+
+model EmployeeProgress {
+  id          String    @id @default(cuid())
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  userId      String
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+}
+
+model Quiz {
+  id        String         @id @default(cuid())
+  title     String
+  createdAt DateTime       @default(now())
+  lessonId  String
+  wineId    String?
+  orgId     String
+  lesson    Lesson         @relation(fields: [lessonId], references: [id])
+  org       Org            @relation(fields: [orgId], references: [id])
+  wine      Wine?          @relation(fields: [wineId], references: [id])
+  questions QuizQuestion[]
+  results   QuizResult[]
+}
+
+model QuizQuestion {
+  id          String       @id @default(cuid())
+  question    String
+  explanation String?
+  quizId      String
+  options     QuizOption[]
+  quiz        Quiz         @relation(fields: [quizId], references: [id])
+}
+
+model QuizOption {
+  id         String       @id @default(cuid())
+  optionText String
+  isCorrect  Boolean
+  questionId String
+  question   QuizQuestion @relation(fields: [questionId], references: [id])
+}
+
+model QuizResult {
+  id      String   @id @default(cuid())
+  score   Int
+  takenAt DateTime @default(now())
+  quizId  String
+  userId  String
+  quiz    Quiz     @relation(fields: [quizId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  MANAGER
+}
+
+enum Tier {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum DrinkType {
+  COCKTAIL
+  WINE
+}
