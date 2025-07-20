@@ -28,8 +28,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Name and type are required' });
     }
     try {
+      // For now, assign to a default org if available, or null
+      // In production, you should get orgId from the authenticated user/session
+      const defaultOrg = await prisma.org.findFirst();
+      if (!defaultOrg) {
+        return res.status(400).json({ error: 'No organization found. Cannot create liquor.' });
+      }
       const liquor = await prisma.liquor.create({
-        data: { name, type, description, imageUrl },
+        data: { name, type, description, imageUrl, orgId: defaultOrg.id },
       });
       res.status(201).json(liquor);
     } catch (e: any) {
