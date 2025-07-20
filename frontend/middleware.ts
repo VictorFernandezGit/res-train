@@ -44,8 +44,19 @@ export async function middleware(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser()
 
+    // Public routes (allowlist, with subpath support)
+    const publicRoutes = ['/', '/admin/signup', '/login', '/about', '/terms', '/contact'];
+    const isPublic = publicRoutes.some(
+      (route) =>
+        request.nextUrl.pathname === route ||
+        request.nextUrl.pathname.startsWith(route + '/')
+    );
+    if (isPublic) {
+      return supabaseResponse;
+    }
+
     // Only protect these routes
-    const protectedRoutes = ['/dashboard', '/admin', '/admin/dashboard', '/admin/signup']
+    const protectedRoutes = ['/dashboard', '/admin', '/admin/dashboard'];
     if (
       !user &&
       protectedRoutes.some((route) =>
