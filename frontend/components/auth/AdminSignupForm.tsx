@@ -4,7 +4,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 
 import { useFormState } from "react-dom";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { registerAdmin, AdminSignupState } from "@/app/actions/registerAdmin";
 import { createClient } from "@/lib/supabase";
@@ -12,44 +12,76 @@ import { createClient } from "@/lib/supabase";
 export default function AdminSignupForm() {
   const router = useRouter();
   const supabase = createClient();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   const [state, formAction] = useFormState<AdminSignupState, FormData>(registerAdmin, { error: null });
 
   useEffect(() => {
     if (state?.success) {
+      console.log("Registration successful, attempting auto-login...");
+      setIsLoggingIn(true);
+      
       // Try to get the form data from the last submission to auto-login
       const handleAutoLogin = async () => {
         try {
-          // Get the email and password from the form (if available)
-          const formElements = document.querySelector('form') as HTMLFormElement;
-          if (formElements) {
-            const formData = new FormData(formElements);
+          // Get the email and password from the form
+          if (formRef.current) {
+            const formData = new FormData(formRef.current);
             const email = formData.get('email') as string;
             const password = formData.get('password') as string;
             
+            console.log("Attempting to sign in with email:", email);
+            
             if (email && password) {
-              const { error } = await supabase.auth.signInWithPassword({
+              const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
               });
               
-              if (!error) {
+              console.log("Sign in result:", { data: !!data.user, error });
+              
+              if (!error && data.user) {
+                console.log("Auto-login successful, redirecting to admin dashboard...");
                 router.push("/admin/dashboard");
+                router.refresh(); // Force a refresh to update auth state
                 return;
+              } else {
+                console.error("Auto-login failed:", error);
               }
+            } else {
+              console.error("Email or password not found in form");
             }
+          } else {
+            console.error("Form reference not found");
           }
         } catch (error) {
-          console.warn("Auto-login failed:", error);
+          console.error("Auto-login error:", error);
         }
         
+        setIsLoggingIn(false);
         // If auto-login fails, redirect to login page
+        console.log("Redirecting to login page...");
         router.push("/login?message=Registration successful. Please sign in.");
       };
       
-      handleAutoLogin();
+      // Add a small delay to ensure form data is available
+      setTimeout(handleAutoLogin, 100);
     }
   }, [state, router, supabase]);
+
+  if (isLoggingIn) {
+    return (
+      <div className="w-full max-w-md mx-auto">
+        <div className="bg-white shadow-md rounded-lg px-8 pt-6 pb-8 mb-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Signing you in...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -57,7 +89,7 @@ export default function AdminSignupForm() {
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">
           Create Admin Account
         </h2>
-        <form action={formAction} className="space-y-4">
+        <form ref={formRef} action={formAction} className="space-y-4">
           {state?.error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
               {state.error}
