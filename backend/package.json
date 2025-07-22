@@ -17,6 +17,7 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2",
     "@prisma/client": "^5.10.0",
     "@supabase/supabase-js": "^2.50.3",
     "dotenv": "^16.4.0",
