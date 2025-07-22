@@ -13,47 +13,46 @@ export default function AdminSignupForm() {
   const router = useRouter();
   const supabase = createClient();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [submittedCredentials, setSubmittedCredentials] = useState<{email: string, password: string} | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   const [state, formAction] = useFormState<AdminSignupState, FormData>(registerAdmin, { error: null });
 
+  // Wrapper function to capture form data before submission
+  const handleSubmit = (formData: FormData) => {
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    
+    // Store credentials for auto-login
+    setSubmittedCredentials({ email, password });
+    
+    // Submit the form
+    formAction(formData);
+  };
+
   useEffect(() => {
-    if (state?.success) {
+    if (state?.success && submittedCredentials) {
       console.log("Registration successful, attempting auto-login...");
       setIsLoggingIn(true);
       
-      // Try to get the form data from the last submission to auto-login
       const handleAutoLogin = async () => {
         try {
-          // Get the email and password from the form
-          if (formRef.current) {
-            const formData = new FormData(formRef.current);
-            const email = formData.get('email') as string;
-            const password = formData.get('password') as string;
-            
-            console.log("Attempting to sign in with email:", email);
-            
-            if (email && password) {
-              const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-              });
-              
-              console.log("Sign in result:", { data: !!data.user, error });
-              
-              if (!error && data.user) {
-                console.log("Auto-login successful, redirecting to admin dashboard...");
-                router.push("/admin/dashboard");
-                router.refresh(); // Force a refresh to update auth state
-                return;
-              } else {
-                console.error("Auto-login failed:", error);
-              }
-            } else {
-              console.error("Email or password not found in form");
-            }
+          console.log("Attempting to sign in with email:", submittedCredentials.email);
+          
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: submittedCredentials.email,
+            password: submittedCredentials.password,
+          });
+          
+          console.log("Sign in result:", { data: !!data.user, error });
+          
+          if (!error && data.user) {
+            console.log("Auto-login successful, redirecting to admin dashboard...");
+            router.push("/admin/dashboard");
+            router.refresh(); // Force a refresh to update auth state
+            return;
           } else {
-            console.error("Form reference not found");
+            console.error("Auto-login failed:", error);
           }
         } catch (error) {
           console.error("Auto-login error:", error);
@@ -65,10 +64,10 @@ export default function AdminSignupForm() {
         router.push("/login?message=Registration successful. Please sign in.");
       };
       
-      // Add a small delay to ensure form data is available
-      setTimeout(handleAutoLogin, 100);
+      // Add a small delay to ensure the auth user was created
+      setTimeout(handleAutoLogin, 500);
     }
-  }, [state, router, supabase]);
+  }, [state, router, supabase, submittedCredentials]);
 
   if (isLoggingIn) {
     return (
@@ -89,7 +88,7 @@ export default function AdminSignupForm() {
         <h2 className="text-2xl font-bold text-center mb-6 text-gray-900">
           Create Admin Account
         </h2>
-        <form ref={formRef} action={formAction} className="space-y-4">
+        <form ref={formRef} action={handleSubmit} className="space-y-4">
           {state?.error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
               {state.error}
