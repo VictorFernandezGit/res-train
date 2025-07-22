@@ -7,17 +7,49 @@ import { useFormState } from "react-dom";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { registerAdmin, AdminSignupState } from "@/app/actions/registerAdmin";
+import { createClient } from "@/lib/supabase";
 
 export default function AdminSignupForm() {
   const router = useRouter();
+  const supabase = createClient();
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   const [state, formAction] = useFormState<AdminSignupState, FormData>(registerAdmin, { error: null });
 
   useEffect(() => {
     if (state?.success) {
-      router.push("/admin/dashboard");
+      // Try to get the form data from the last submission to auto-login
+      const handleAutoLogin = async () => {
+        try {
+          // Get the email and password from the form (if available)
+          const formElements = document.querySelector('form') as HTMLFormElement;
+          if (formElements) {
+            const formData = new FormData(formElements);
+            const email = formData.get('email') as string;
+            const password = formData.get('password') as string;
+            
+            if (email && password) {
+              const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+              });
+              
+              if (!error) {
+                router.push("/admin/dashboard");
+                return;
+              }
+            }
+          }
+        } catch (error) {
+          console.warn("Auto-login failed:", error);
+        }
+        
+        // If auto-login fails, redirect to login page
+        router.push("/login?message=Registration successful. Please sign in.");
+      };
+      
+      handleAutoLogin();
     }
-  }, [state, router]);
+  }, [state, router, supabase]);
 
   return (
     <div className="w-full max-w-md mx-auto">
