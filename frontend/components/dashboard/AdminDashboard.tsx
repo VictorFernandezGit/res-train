@@ -1,196 +1,429 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState } from "react";
+import { 
+  Users, 
+  BookOpen, 
+  BarChart3, 
+  Settings, 
+  Plus, 
+  Search,
+  Filter,
+  Download,
+  Edit,
+  Trash2,
+  Eye,
+  ChevronRight,
+  Menu,
+  X,
+  LogOut,
+  Bell,
+  Calendar,
+  TrendingUp,
+  Award,
+  Clock
+} from "lucide-react";
 
-export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'cocktails' | 'wines'>('cocktails')
-
-  return (
-    <div className="px-4 sm:px-0">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-gray-900">Admin Dashboard</h1>
-          <p className="mt-2 text-sm text-gray-700">
-            Manage cocktails and wines for your restaurant training program.
-          </p>
-        </div>
-        <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-          <Link
-            href={`/admin/${activeTab}/new`}
-            className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
-          >
-            Add {activeTab === 'cocktails' ? 'Cocktail' : 'Wine'}
-          </Link>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="mt-8 border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('cocktails')}
-            className={`${
-              activeTab === 'cocktails'
-                ? 'border-indigo-500 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm`}
-          >
-            Cocktails
-          </button>
-          <button
-            onClick={() => setActiveTab('wines')}
-            className={`${
-              activeTab === 'wines'
-                ? 'border-indigo-500 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm`}
-          >
-            Wines
-          </button>
-        </nav>
-      </div>
-
-      {/* Content Area */}
-      <div className="mt-8">
-        {activeTab === 'cocktails' ? (
-          <CocktailsList />
-        ) : (
-          <WinesList />
-        )}
-      </div>
-    </div>
-  )
+interface AdminDashboardProps {
+  adminName: string;
+  orgName: string;
 }
 
-function CocktailsList() {
-  // Placeholder data - will be replaced with API calls
-  const cocktails = [
-    {
-      id: '1',
-      name: 'Classic Margarita',
-      baseLiquor: 'Tequila',
-      tier: 'MEDIUM',
-      description: 'A refreshing and tangy classic cocktail perfect for any occasion.',
-    },
-    {
-      id: '2',
-      name: 'Negroni',
-      baseLiquor: 'Gin',
-      tier: 'HIGH',
-      description: 'A sophisticated Italian aperitif with a perfect balance of bitter and sweet.',
-    },
-  ]
+export default function AdminDashboard({ adminName, orgName }: AdminDashboardProps) {
+  const [activeTab, setActiveTab] = useState("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-md">
-      <ul className="divide-y divide-gray-200">
-        {cocktails.map((cocktail) => (
-          <li key={cocktail.id}>
-            <div className="px-4 py-4 sm:px-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                      <span className="text-indigo-600 font-medium">
-                        {cocktail.name.charAt(0)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      {cocktail.name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {cocktail.baseLiquor} • {cocktail.tier}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Link
-                    href={`/admin/cocktails/${cocktail.id}/edit`}
-                    className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                  >
-                    Edit
-                  </Link>
-                  <button className="text-red-600 hover:text-red-900 text-sm font-medium">
-                    Delete
-                  </button>
-                </div>
+  // Mock data - in real app, this would come from API calls
+  const stats = {
+    totalStaff: 24,
+    activeTraining: 3,
+    completionRate: 87,
+    pendingCertifications: 5
+  };
+
+  const recentActivity = [
+    { id: 1, user: "John Smith", action: "Completed Wine Service Module", time: "2 hours ago" },
+    { id: 2, user: "Sarah Johnson", action: "Started Cocktail Basics", time: "4 hours ago" },
+    { id: 3, user: "Mike Chen", action: "Passed Liquor Knowledge Quiz", time: "6 hours ago" },
+    { id: 4, user: "Emma Davis", action: "Updated Profile", time: "1 day ago" }
+  ];
+
+  const staff = [
+    { id: 1, name: "John Smith", email: "john@restaurant.com", role: "Bartender", progress: 85, status: "Active" },
+    { id: 2, name: "Sarah Johnson", email: "sarah@restaurant.com", role: "Server", progress: 92, status: "Active" },
+    { id: 3, name: "Mike Chen", email: "mike@restaurant.com", role: "Sommelier", progress: 78, status: "Training" },
+    { id: 4, name: "Emma Davis", email: "emma@restaurant.com", role: "Manager", progress: 95, status: "Active" }
+  ];
+
+  const trainingModules = [
+    { id: 1, title: "Wine Service Fundamentals", lessons: 8, enrolled: 15, completion: 87 },
+    { id: 2, title: "Cocktail Preparation", lessons: 12, enrolled: 20, completion: 78 },
+    { id: 3, title: "Customer Service Excellence", lessons: 6, enrolled: 24, completion: 95 },
+    { id: 4, title: "Food Safety & Hygiene", lessons: 10, enrolled: 24, completion: 89 }
+  ];
+
+  const navigation = [
+    { id: "overview", name: "Overview", icon: BarChart3 },
+    { id: "staff", name: "Staff Management", icon: Users },
+    { id: "training", name: "Training Content", icon: BookOpen },
+    { id: "analytics", name: "Analytics", icon: TrendingUp },
+    { id: "settings", name: "Settings", icon: Settings }
+  ];
+
+  const StatCard = ({ title, value, icon: Icon, color }: any) => (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
+        </div>
+        <div className={`p-3 rounded-lg ${color}`}>
+          <Icon className="h-6 w-6 text-white" />
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderOverview = () => (
+    <div className="space-y-6">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Total Staff" value={stats.totalStaff} icon={Users} color="bg-blue-500" />
+        <StatCard title="Active Training" value={stats.activeTraining} icon={BookOpen} color="bg-green-500" />
+        <StatCard title="Completion Rate" value={`${stats.completionRate}%`} icon={Award} color="bg-purple-500" />
+        <StatCard title="Pending Certifications" value={stats.pendingCertifications} icon={Clock} color="bg-orange-500" />
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Staff
+          </button>
+          <button className="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            <BookOpen className="h-4 w-4 mr-2" />
+            Create Module
+          </button>
+          <button className="flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            View Reports
+          </button>
+          <button className="flex items-center justify-center px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+            <Download className="h-4 w-4 mr-2" />
+            Export Data
+          </button>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <div className="space-y-4">
+          {recentActivity.map((activity) => (
+            <div key={activity.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+              <div>
+                <p className="text-sm font-medium text-gray-900">{activity.user}</p>
+                <p className="text-sm text-gray-600">{activity.action}</p>
               </div>
-              <div className="mt-2">
-                <p className="text-sm text-gray-600">{cocktail.description}</p>
+              <span className="text-xs text-gray-500">{activity.time}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderStaff = () => (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Staff Management</h2>
+        <div className="mt-4 sm:mt-0 flex space-x-3">
+          <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+            <Filter className="h-4 w-4 mr-2" />
+            Filter
+          </button>
+          <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Staff
+          </button>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search staff members..."
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+
+      {/* Staff Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {staff.map((member) => (
+                <tr key={member.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{member.name}</div>
+                      <div className="text-sm text-gray-500">{member.email}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.role}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full" 
+                          style={{ width: `${member.progress}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-gray-900">{member.progress}%</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      member.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
+                    }`}>
+                      {member.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button className="text-blue-600 hover:text-blue-900">
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button className="text-gray-600 hover:text-gray-900">
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button className="text-red-600 hover:text-red-900">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderTraining = () => (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Training Content</h2>
+        <button className="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700">
+          <Plus className="h-4 w-4 mr-2" />
+          Create Module
+        </button>
+      </div>
+
+      {/* Training Modules Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {trainingModules.map((module) => (
+          <div key={module.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">{module.title}</h3>
+              <button className="text-gray-400 hover:text-gray-600">
+                <Edit className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Lessons</span>
+                <span className="font-medium">{module.lessons}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Enrolled</span>
+                <span className="font-medium">{module.enrolled}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Completion</span>
+                <span className="font-medium">{module.completion}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-green-600 h-2 rounded-full" 
+                  style={{ width: `${module.completion}%` }}
+                ></div>
               </div>
             </div>
-          </li>
+            <div className="mt-4 flex space-x-2">
+              <button className="flex-1 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100">
+                View Details
+              </button>
+              <button className="flex-1 px-3 py-2 text-sm bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100">
+                Edit Module
+              </button>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
-  )
+  );
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case "staff":
+        return renderStaff();
+      case "training":
+        return renderTraining();
+      case "analytics":
+        return (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <BarChart3 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Analytics Dashboard</h3>
+            <p className="text-gray-600">Detailed analytics and reporting features coming soon.</p>
+          </div>
+        );
+      case "settings":
+        return (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Settings</h3>
+            <p className="text-gray-600">Organization and account settings panel coming soon.</p>
+          </div>
+        );
+      default:
+        return renderOverview();
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 flex z-40 md:hidden">
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
+            <div className="absolute top-0 right-0 -mr-12 pt-2">
+              <button
+                className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-6 w-6 text-white" />
+              </button>
+            </div>
+            <SidebarContent navigation={navigation} activeTab={activeTab} setActiveTab={setActiveTab} orgName={orgName} />
+          </div>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+        <SidebarContent navigation={navigation} activeTab={activeTab} setActiveTab={setActiveTab} orgName={orgName} />
+      </div>
+
+      {/* Main content */}
+      <div className="md:pl-64 flex flex-col flex-1">
+        {/* Top bar */}
+        <div className="sticky top-0 z-10 bg-white shadow-sm border-b border-gray-200">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between h-16">
+              <div className="flex items-center">
+                <button
+                  className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  <Menu className="h-6 w-6" />
+                </button>
+                <h1 className="ml-2 md:ml-0 text-2xl font-bold text-gray-900">
+                  {navigation.find(nav => nav.id === activeTab)?.name || "Overview"}
+                </h1>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <button className="p-2 text-gray-400 hover:text-gray-500">
+                  <Bell className="h-5 w-5" />
+                </button>
+                <div className="flex items-center space-x-3">
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-gray-900">{adminName}</div>
+                    <div className="text-xs text-gray-500">Administrator</div>
+                  </div>
+                  <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">
+                      {adminName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Page content */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          {renderContent()}
+        </main>
+      </div>
+    </div>
+  );
 }
 
-function WinesList() {
-  // Placeholder data - will be replaced with API calls
-  const wines = [
-    {
-      id: '1',
-      name: 'Château Margaux 2015',
-      grapeVariety: 'Cabernet Sauvignon',
-      tier: 'HIGH',
-      description: 'A legendary Bordeaux with exceptional complexity and aging potential.',
-    },
-    {
-      id: '2',
-      name: 'Dom Pérignon 2012',
-      grapeVariety: 'Chardonnay',
-      tier: 'HIGH',
-      description: 'A prestigious champagne with fine bubbles and elegant complexity.',
-    },
-  ]
-
+function SidebarContent({ navigation, activeTab, setActiveTab, orgName }: any) {
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-md">
-      <ul className="divide-y divide-gray-200">
-        {wines.map((wine) => (
-          <li key={wine.id}>
-            <div className="px-4 py-4 sm:px-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                      <span className="text-purple-600 font-medium">
-                        {wine.name.charAt(0)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="ml-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      {wine.name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {wine.grapeVariety} • {wine.tier}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Link
-                    href={`/admin/wines/${wine.id}/edit`}
-                    className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                  >
-                    Edit
-                  </Link>
-                  <button className="text-red-600 hover:text-red-900 text-sm font-medium">
-                    Delete
-                  </button>
-                </div>
-              </div>
-              <div className="mt-2">
-                <p className="text-sm text-gray-600">{wine.description}</p>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+    <div className="flex flex-col h-full bg-white border-r border-gray-200">
+      {/* Logo/Brand */}
+      <div className="flex items-center h-16 px-6 border-b border-gray-200">
+        <div className="flex items-center">
+          <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <BookOpen className="h-5 w-5 text-white" />
+          </div>
+          <div className="ml-3">
+            <div className="text-sm font-semibold text-gray-900">{orgName}</div>
+            <div className="text-xs text-gray-500">Training Portal</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-6 space-y-1">
+        {navigation.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                activeTab === item.id
+                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              }`}
+            >
+              <Icon className="h-5 w-5 mr-3" />
+              {item.name}
+              {activeTab === item.id && <ChevronRight className="h-4 w-4 ml-auto" />}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Bottom section */}
+      <div className="p-3 border-t border-gray-200">
+        <button className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors">
+          <LogOut className="h-5 w-5 mr-3" />
+          Sign Out
+        </button>
+      </div>
     </div>
-  )
+  );
 } 
