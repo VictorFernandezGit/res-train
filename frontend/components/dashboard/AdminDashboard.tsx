@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase";
+import { addStaffMember } from "@/lib/actions";
 import { 
   Users, 
   BookOpen, 
@@ -32,10 +35,62 @@ interface AdminDashboardProps {
 export default function AdminDashboard({ adminName, orgName }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false);
+  const [staff, setStaff] = useState([
+    { id: 1, name: "John Smith", email: "john@restaurant.com", role: "Bartender", progress: 85, status: "Active" },
+    { id: 2, name: "Sarah Johnson", email: "sarah@restaurant.com", role: "Server", progress: 92, status: "Active" },
+    { id: 3, name: "Mike Chen", email: "mike@restaurant.com", role: "Sommelier", progress: 78, status: "Training" },
+    { id: 4, name: "Emma Davis", email: "emma@restaurant.com", role: "Manager", progress: 95, status: "Active" }
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  const handleAddStaff = async (staffData: { name: string; email: string; role: string; password: string }) => {
+    setIsLoading(true);
+    try {
+      // Get current admin user to extract orgId
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const orgId = currentUser?.user_metadata?.org_id;
+
+      if (!orgId) {
+        throw new Error("Organization ID not found. Please contact support.");
+      }
+
+      // Use server action to create staff member
+      const result = await addStaffMember(orgId, staffData);
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      if (result.staff) {
+        // Update local state
+        setStaff(prev => [...prev, result.staff]);
+        setShowAddStaffModal(false);
+      }
+
+    } catch (error: any) {
+      console.error("Error adding staff:", error);
+      alert("Error adding staff member: " + error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Mock data - in real app, this would come from API calls
   const stats = {
-    totalStaff: 24,
+    totalStaff: staff.length,
     activeTraining: 3,
     completionRate: 87,
     pendingCertifications: 5
@@ -46,13 +101,6 @@ export default function AdminDashboard({ adminName, orgName }: AdminDashboardPro
     { id: 2, user: "Sarah Johnson", action: "Started Cocktail Basics", time: "4 hours ago" },
     { id: 3, user: "Mike Chen", action: "Passed Liquor Knowledge Quiz", time: "6 hours ago" },
     { id: 4, user: "Emma Davis", action: "Updated Profile", time: "1 day ago" }
-  ];
-
-  const staff = [
-    { id: 1, name: "John Smith", email: "john@restaurant.com", role: "Bartender", progress: 85, status: "Active" },
-    { id: 2, name: "Sarah Johnson", email: "sarah@restaurant.com", role: "Server", progress: 92, status: "Active" },
-    { id: 3, name: "Mike Chen", email: "mike@restaurant.com", role: "Sommelier", progress: 78, status: "Training" },
-    { id: 4, name: "Emma Davis", email: "emma@restaurant.com", role: "Manager", progress: 95, status: "Active" }
   ];
 
   const trainingModules = [
@@ -98,7 +146,10 @@ export default function AdminDashboard({ adminName, orgName }: AdminDashboardPro
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <button 
+            onClick={() => setShowAddStaffModal(true)}
+            className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Staff
           </button>
@@ -145,7 +196,10 @@ export default function AdminDashboard({ adminName, orgName }: AdminDashboardPro
             <Filter className="h-4 w-4 mr-2" />
             Filter
           </button>
-          <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
+          <button 
+            onClick={() => setShowAddStaffModal(true)}
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Staff
           </button>
@@ -322,14 +376,14 @@ export default function AdminDashboard({ adminName, orgName }: AdminDashboardPro
                 <X className="h-6 w-6 text-white" />
               </button>
             </div>
-            <SidebarContent navigation={navigation} activeTab={activeTab} setActiveTab={setActiveTab} orgName={orgName} />
+            <SidebarContent navigation={navigation} activeTab={activeTab} setActiveTab={setActiveTab} orgName={orgName} handleLogout={handleLogout} />
           </div>
         </div>
       )}
 
       {/* Desktop sidebar */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <SidebarContent navigation={navigation} activeTab={activeTab} setActiveTab={setActiveTab} orgName={orgName} />
+        <SidebarContent navigation={navigation} activeTab={activeTab} setActiveTab={setActiveTab} orgName={orgName} handleLogout={handleLogout} />
       </div>
 
       {/* Main content */}
@@ -375,11 +429,20 @@ export default function AdminDashboard({ adminName, orgName }: AdminDashboardPro
           {renderContent()}
         </main>
       </div>
+
+      {/* Add Staff Modal */}
+      {showAddStaffModal && (
+        <AddStaffModal
+          onClose={() => setShowAddStaffModal(false)}
+          onSubmit={handleAddStaff}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }
 
-function SidebarContent({ navigation, activeTab, setActiveTab, orgName }: any) {
+function SidebarContent({ navigation, activeTab, setActiveTab, orgName, handleLogout }: any) {
   return (
     <div className="flex flex-col h-full bg-white border-r border-gray-200">
       {/* Logo/Brand */}
@@ -419,10 +482,154 @@ function SidebarContent({ navigation, activeTab, setActiveTab, orgName }: any) {
 
       {/* Bottom section */}
       <div className="p-3 border-t border-gray-200">
-        <button className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors">
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors"
+        >
           <LogOut className="h-5 w-5 mr-3" />
           Sign Out
         </button>
+      </div>
+    </div>
+  );
+} 
+
+function AddStaffModal({ onClose, onSubmit, isLoading }: {
+  onClose: () => void;
+  onSubmit: (data: { name: string; email: string; role: string; password: string }) => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    role: "STAFF",
+    password: ""
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.name && formData.email && formData.role && formData.password) {
+      onSubmit(formData);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">Add New Staff Member</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+            disabled={isLoading}
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+              disabled={isLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              placeholder="John Doe"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+              disabled={isLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              placeholder="john@restaurant.com"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+              Role
+            </label>
+            <select
+              id="role"
+              name="role"
+              value={formData.role}
+              onChange={handleInputChange}
+              required
+              disabled={isLoading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+            >
+              <option value="STAFF">Staff</option>
+              <option value="MANAGER">Manager</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Temporary Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+              disabled={isLoading}
+              minLength={8}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+              placeholder="Minimum 8 characters"
+            />
+          </div>
+
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading || !formData.name || !formData.email || !formData.password}
+              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center"
+            >
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Adding...
+                </>
+              ) : (
+                "Add Staff Member"
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
