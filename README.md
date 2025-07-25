@@ -14,7 +14,7 @@ res-train/
 
 ---
 
-## Setup Instructions
+## Setup Instructions (make private)
 
 ### 1. Clone the Repository
 ```sh
