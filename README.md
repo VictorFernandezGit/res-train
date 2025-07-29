@@ -77,7 +77,7 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## Liquor API
+## Liquor API (uodate)
 - **GET /api/liquors**: Returns custom liquors (from DB) and liquors from TheCocktailDB.
 - **POST /api/liquors**: Adds a custom liquor to the database.
 
