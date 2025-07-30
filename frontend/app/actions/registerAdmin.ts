@@ -1,6 +1,6 @@
 "use server";
 import { createClient } from "@supabase/supabase-js";
-import { adminSignupSchema } from "@/lib/validations";
+import { AdminSignupSchema } from "@/lib/validations";
 import { createId } from '@paralleldrive/cuid2';
 
 export type AdminSignupState = {
@@ -23,7 +23,7 @@ export async function registerAdmin(
       password: formData.get("password") as string,
       orgName: formData.get("orgName") as string,
     };
-    adminSignupSchema.parse(rawData);
+    AdminSignupSchema.parse(rawData);
 
     const now = new Date().toISOString();
 

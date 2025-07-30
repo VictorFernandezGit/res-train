@@ -79,7 +79,7 @@ export const ContentSchema = z.object({
   text: z.string().optional(),
   html: z.string().optional(),
   blocks: z.array(z.any()).optional(), // For block-based editors
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 }).refine(
   (data) => data.text || data.html || data.blocks,
   { message: "Content must have text, html, or blocks" }
@@ -88,7 +88,7 @@ export const ContentSchema = z.object({
 // Audit log validation
 export const AuditLogSchema = z.object({
   action: z.string().min(1, "Action is required").max(100, "Action name too long"),
-  details: z.record(z.any()).optional(),
+  details: z.record(z.string(), z.any()).optional(),
   tableName: z.string().max(50, "Table name too long").optional(),
   recordId: z.string().cuid("Invalid record ID").optional(),
   ipAddress: z.string().optional(),

@@ -3,40 +3,40 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
 model Org {
-  id        String     @id @default(cuid())
+  id        String        @id @default(cuid())
   name      String
-  createdAt DateTime   @default(now())
+  createdAt DateTime      @default(now())
+  auditLogs AuditLog[]
   cocktails Cocktail[]
   lessons   Lesson[]
+  media     LessonMedia[]
   liquors   Liquor[]
   modules   Module[]
   quizzes   Quiz[]
   users     User[]
   wines     Wine[]
-  media     LessonMedia[]
-  auditLogs AuditLog[]
 }
 
 model User {
-  id          String             @id @default(cuid())
-  email       String             @unique
-  name        String?
-  role        UserRole           @default(STAFF)
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  supabaseId  String?            @unique
-  orgId       String
-  progress    EmployeeProgress[]
-  quizResults QuizResult[]
-  auditLogs   AuditLog[]
+  id            String             @id @default(cuid())
+  email         String             @unique
+  name          String?
+  role          UserRole           @default(STAFF)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  supabaseId    String?            @unique
+  orgId         String
+  auditLogs     AuditLog[]
+  progress      EmployeeProgress[]
   uploadedMedia LessonMedia[]
-  org         Org                @relation(fields: [orgId], references: [id])
+  quizResults   QuizResult[]
+  org           Org                @relation(fields: [orgId], references: [id])
 }
 
 model Wine {
@@ -89,94 +89,90 @@ model CocktailIngredient {
   cocktail   Cocktail @relation(fields: [cocktailId], references: [id])
 }
 
-// Enhanced Module with LMS features
 model Module {
   id                String             @id @default(cuid())
   title             String
-  description       String?
-  imageUrl          String?
-  category          ModuleCategory     @default(GENERAL)
-  difficulty        DifficultyLevel    @default(BEGINNER)
-  estimatedDuration Int?               // in minutes
-  isPublished       Boolean            @default(false)
-  prerequisites     String[]           // array of module IDs
-  tags              String[]
-  orderIndex        Int?               // for sorting modules
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
   orgId             String
-  lessons           Lesson[]
+  category          ModuleCategory     @default(GENERAL)
+  createdAt         DateTime           @default(now())
+  description       String?
+  difficulty        DifficultyLevel    @default(BEGINNER)
+  estimatedDuration Int?
+  imageUrl          String?
+  isPublished       Boolean            @default(false)
+  orderIndex        Int?
+  prerequisites     String[]
+  tags              String[]
+  updatedAt         DateTime           @updatedAt
   progress          EmployeeProgress[]
+  lessons           Lesson[]
   org               Org                @relation(fields: [orgId], references: [id])
 
   @@index([orgId, isPublished])
   @@index([category, difficulty])
 }
 
-// Enhanced Lesson with rich content support
 model Lesson {
   id           String             @id @default(cuid())
   title        String
-  description  String?
-  content      Json?              // Rich content structure (JSON)
-  contentType  ContentType        @default(TEXT)
-  orderIndex   Int                @default(0)
-  duration     Int?               // estimated duration in minutes
-  isRequired   Boolean            @default(true)
-  passingScore Int?               // for quiz-type lessons
-  mediaUrl     String?            // legacy field, consider removing later
-  isPublished  Boolean            @default(false)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  mediaUrl     String?
   moduleId     String
   orgId        String
+  contentType  ContentType        @default(TEXT)
+  createdAt    DateTime           @default(now())
+  description  String?
+  duration     Int?
+  isPublished  Boolean            @default(false)
+  isRequired   Boolean            @default(true)
+  orderIndex   Int                @default(0)
+  passingScore Int?
+  updatedAt    DateTime           @updatedAt
+  content      Json?
   progress     EmployeeProgress[]
   module       Module             @relation(fields: [moduleId], references: [id])
   org          Org                @relation(fields: [orgId], references: [id])
-  quizzes      Quiz[]
   media        LessonMedia[]
+  quizzes      Quiz[]
 
   @@index([moduleId, orderIndex])
   @@index([orgId, isPublished])
 }
 
-// New: Media/File management for lessons
 model LessonMedia {
   id           String   @id @default(cuid())
-  filename     String   // stored filename
-  originalName String   // original upload name
+  filename     String
+  originalName String
   mimeType     String
-  size         Int      // file size in bytes
-  url          String   // public URL
+  size         Int
+  url          String
   description  String?
-  lessonId     String?  // optional, media can exist without lesson
-  uploadedBy   String   // user ID who uploaded
+  lessonId     String?
+  uploadedBy   String
   createdAt    DateTime @default(now())
   orgId        String
   lesson       Lesson?  @relation(fields: [lessonId], references: [id])
-  uploader     User     @relation(fields: [uploadedBy], references: [id])
   org          Org      @relation(fields: [orgId], references: [id])
+  uploader     User     @relation(fields: [uploadedBy], references: [id])
 
   @@index([lessonId])
   @@index([orgId, mimeType])
 }
 
-// Enhanced EmployeeProgress with detailed tracking
 model EmployeeProgress {
   id           String         @id @default(cuid())
-  status       ProgressStatus @default(NOT_STARTED)
-  score        Float?         // percentage score (0-100)
-  timeSpent    Int?           // time spent in minutes
-  attempts     Int            @default(0)
-  lastAccessed DateTime?
-  completed    Boolean        @default(false) // legacy field
+  completed    Boolean        @default(false)
   completedAt  DateTime?
-  notes        String?        // user notes
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
   userId       String
-  lessonId     String?        // can track module-level progress too
-  moduleId     String?        // module-level progress
+  lessonId     String?
+  attempts     Int            @default(0)
+  createdAt    DateTime       @default(now())
+  lastAccessed DateTime?
+  moduleId     String?
+  notes        String?
+  score        Float?
+  status       ProgressStatus @default(NOT_STARTED)
+  timeSpent    Int?
+  updatedAt    DateTime       @updatedAt
   lesson       Lesson?        @relation(fields: [lessonId], references: [id])
   module       Module?        @relation(fields: [moduleId], references: [id])
   user         User           @relation(fields: [userId], references: [id])
@@ -228,27 +224,25 @@ model QuizResult {
   user    User     @relation(fields: [userId], references: [id])
 }
 
-// New: Audit logging for security and compliance
 model AuditLog {
-  id        String     @id @default(cuid())
-  action    String     // e.g., "MODULE_CREATED", "LESSON_UPDATED", "USER_LOGIN"
-  details   Json?      // additional details about the action
-  tableName String?    // which table was affected
-  recordId  String?    // which record was affected
-  userId    String     // who performed the action
+  id        String   @id @default(cuid())
+  action    String
+  details   Json?
+  tableName String?
+  recordId  String?
+  userId    String
   ipAddress String?
   userAgent String?
-  createdAt DateTime   @default(now())
+  createdAt DateTime @default(now())
   orgId     String
-  user      User       @relation(fields: [userId], references: [id])
-  org       Org        @relation(fields: [orgId], references: [id])
+  org       Org      @relation(fields: [orgId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId, createdAt])
   @@index([orgId, action])
   @@index([tableName, recordId])
 }
 
-// Enums
 enum UserRole {
   ADMIN
   STAFF
@@ -266,7 +260,6 @@ enum DrinkType {
   WINE
 }
 
-// New LMS-specific enums
 enum ModuleCategory {
   WINE
   SPIRITS

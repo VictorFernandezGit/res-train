@@ -153,9 +153,12 @@ export default function AdminDashboard({ adminName, orgName }: AdminDashboardPro
             <Plus className="h-4 w-4 mr-2" />
             Add Staff
           </button>
-          <button className="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+          <button 
+            onClick={() => router.push('/admin/content')}
+            className="flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
             <BookOpen className="h-4 w-4 mr-2" />
-            Create Module
+            Manage Content
           </button>
           <button className="flex items-center justify-center px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
             <BarChart3 className="h-4 w-4 mr-2" />
