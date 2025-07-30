@@ -2,7 +2,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -20,6 +19,8 @@ model Org {
   quizzes   Quiz[]
   users     User[]
   wines     Wine[]
+  media     LessonMedia[]
+  auditLogs AuditLog[]
 }
 
 model User {
@@ -33,6 +34,8 @@ model User {
   orgId       String
   progress    EmployeeProgress[]
   quizResults QuizResult[]
+  auditLogs   AuditLog[]
+  uploadedMedia LessonMedia[]
   org         Org                @relation(fields: [orgId], references: [id])
 }
 
@@ -86,35 +89,102 @@ model CocktailIngredient {
   cocktail   Cocktail @relation(fields: [cocktailId], references: [id])
 }
 
+// Enhanced Module with LMS features
 model Module {
-  id      String   @id @default(cuid())
-  title   String
-  orgId   String
-  lessons Lesson[]
-  org     Org      @relation(fields: [orgId], references: [id])
+  id                String             @id @default(cuid())
+  title             String
+  description       String?
+  imageUrl          String?
+  category          ModuleCategory     @default(GENERAL)
+  difficulty        DifficultyLevel    @default(BEGINNER)
+  estimatedDuration Int?               // in minutes
+  isPublished       Boolean            @default(false)
+  prerequisites     String[]           // array of module IDs
+  tags              String[]
+  orderIndex        Int?               // for sorting modules
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  orgId             String
+  lessons           Lesson[]
+  progress          EmployeeProgress[]
+  org               Org                @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, isPublished])
+  @@index([category, difficulty])
 }
 
+// Enhanced Lesson with rich content support
 model Lesson {
-  id       String             @id @default(cuid())
-  title    String
-  content  String
-  mediaUrl String?
-  moduleId String
-  orgId    String
-  progress EmployeeProgress[]
-  module   Module             @relation(fields: [moduleId], references: [id])
-  org      Org                @relation(fields: [orgId], references: [id])
-  quizzes  Quiz[]
+  id           String             @id @default(cuid())
+  title        String
+  description  String?
+  content      Json?              // Rich content structure (JSON)
+  contentType  ContentType        @default(TEXT)
+  orderIndex   Int                @default(0)
+  duration     Int?               // estimated duration in minutes
+  isRequired   Boolean            @default(true)
+  passingScore Int?               // for quiz-type lessons
+  mediaUrl     String?            // legacy field, consider removing later
+  isPublished  Boolean            @default(false)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  moduleId     String
+  orgId        String
+  progress     EmployeeProgress[]
+  module       Module             @relation(fields: [moduleId], references: [id])
+  org          Org                @relation(fields: [orgId], references: [id])
+  quizzes      Quiz[]
+  media        LessonMedia[]
+
+  @@index([moduleId, orderIndex])
+  @@index([orgId, isPublished])
 }
 
+// New: Media/File management for lessons
+model LessonMedia {
+  id           String   @id @default(cuid())
+  filename     String   // stored filename
+  originalName String   // original upload name
+  mimeType     String
+  size         Int      // file size in bytes
+  url          String   // public URL
+  description  String?
+  lessonId     String?  // optional, media can exist without lesson
+  uploadedBy   String   // user ID who uploaded
+  createdAt    DateTime @default(now())
+  orgId        String
+  lesson       Lesson?  @relation(fields: [lessonId], references: [id])
+  uploader     User     @relation(fields: [uploadedBy], references: [id])
+  org          Org      @relation(fields: [orgId], references: [id])
+
+  @@index([lessonId])
+  @@index([orgId, mimeType])
+}
+
+// Enhanced EmployeeProgress with detailed tracking
 model EmployeeProgress {
-  id          String    @id @default(cuid())
-  completed   Boolean   @default(false)
-  completedAt DateTime?
-  userId      String
-  lessonId    String
-  lesson      Lesson    @relation(fields: [lessonId], references: [id])
-  user        User      @relation(fields: [userId], references: [id])
+  id           String         @id @default(cuid())
+  status       ProgressStatus @default(NOT_STARTED)
+  score        Float?         // percentage score (0-100)
+  timeSpent    Int?           // time spent in minutes
+  attempts     Int            @default(0)
+  lastAccessed DateTime?
+  completed    Boolean        @default(false) // legacy field
+  completedAt  DateTime?
+  notes        String?        // user notes
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  userId       String
+  lessonId     String?        // can track module-level progress too
+  moduleId     String?        // module-level progress
+  lesson       Lesson?        @relation(fields: [lessonId], references: [id])
+  module       Module?        @relation(fields: [moduleId], references: [id])
+  user         User           @relation(fields: [userId], references: [id])
+
+  @@unique([userId, lessonId])
+  @@unique([userId, moduleId])
+  @@index([userId, status])
+  @@index([moduleId, status])
 }
 
 model Quiz {
@@ -158,6 +228,27 @@ model QuizResult {
   user    User     @relation(fields: [userId], references: [id])
 }
 
+// New: Audit logging for security and compliance
+model AuditLog {
+  id        String     @id @default(cuid())
+  action    String     // e.g., "MODULE_CREATED", "LESSON_UPDATED", "USER_LOGIN"
+  details   Json?      // additional details about the action
+  tableName String?    // which table was affected
+  recordId  String?    // which record was affected
+  userId    String     // who performed the action
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime   @default(now())
+  orgId     String
+  user      User       @relation(fields: [userId], references: [id])
+  org       Org        @relation(fields: [orgId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([orgId, action])
+  @@index([tableName, recordId])
+}
+
+// Enums
 enum UserRole {
   ADMIN
   STAFF
@@ -173,4 +264,40 @@ enum Tier {
 enum DrinkType {
   COCKTAIL
   WINE
+}
+
+// New LMS-specific enums
+enum ModuleCategory {
+  WINE
+  SPIRITS
+  COCKTAILS
+  SERVICE
+  COMPLIANCE
+  GENERAL
+  FOOD_PAIRING
+  CUSTOMER_SERVICE
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum ContentType {
+  TEXT
+  VIDEO
+  INTERACTIVE
+  QUIZ
+  DOCUMENT
+  AUDIO
+  PRESENTATION
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  LOCKED
 }
