@@ -3,23 +3,26 @@ import { motion } from "framer-motion";
 
 const plans = [
   {
-    name: "Basic",
-    price: "$297/mo",
-    description: "For small teams getting started. Basic admin tools and up to 3 team members.",
-    cta: "Get Basic",
+    name: "Starter",
+    price: "$99/mo",
+    description: "Perfect for small restaurants. Up to 15 staff members with basic cocktail and wine training modules.",
+    features: ["Cocktail & Wine Training", "Progress Tracking", "Basic Analytics", "Email Support"],
+    cta: "Start Free Trial",
     highlight: false,
   },
   {
-    name: "Pro",
-    price: "$497/mo",
-    description: "For growing teams that need advanced features, analytics, and priority support.",
-    cta: "Get Pro",
+    name: "Professional",
+    price: "$249/mo",
+    description: "For growing restaurant groups. Advanced features, compliance training, and multi-location support.",
+    features: ["Everything in Starter", "Compliance Modules", "Multi-Location", "Advanced Analytics", "Priority Support", "Custom Branding"],
+    cta: "Start Free Trial",
     highlight: true,
   },
   {
     name: "Enterprise",
     price: "Contact Us",
-    description: "Custom solutions, SSO, dedicated support, and advanced integrations.",
+    description: "Custom solutions for large restaurant chains with dedicated support and integrations.",
+    features: ["Everything in Professional", "Custom Modules", "API Access", "SSO Integration", "Dedicated Support", "Custom Training"],
     cta: "Contact Sales",
     highlight: false,
   },
@@ -38,9 +41,9 @@ export default function Pricing() {
         <rect width="800" height="400" fill="url(#pricing-dots)" />
       </svg>
       <div className="relative z-10 max-w-5xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 mb-4">Pricing</h2>
+        <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 mb-4">Simple, Restaurant-Focused Pricing</h2>
         <p className="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-          Simple, transparent pricing for teams of any size. No hidden fees.
+          Start training your staff today with our flexible plans designed for restaurants of any size.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan, i) => (
@@ -60,10 +63,20 @@ export default function Pricing() {
               )}
               <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
               <div className="text-3xl font-extrabold text-blue-700 mb-2">{plan.price}</div>
-              <p className="text-gray-600 mb-6 text-center">{plan.description}</p>
+              <p className="text-gray-600 mb-4 text-center">{plan.description}</p>
+              <ul className="text-sm text-gray-600 mb-6 space-y-2 flex-grow">
+                {plan.features.map((feature, index) => (
+                  <li key={index} className="flex items-center">
+                    <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
               <a
                 href={plan.name === "Enterprise" ? "mailto:sales@yourcompany.com" : "/admin/signup"}
-                className={`w-full py-3 rounded-lg font-semibold text-lg text-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${
+                className={`w-full py-3 rounded-lg font-semibold text-lg text-center transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 block ${
                   plan.highlight
                     ? "bg-blue-600 text-white hover:bg-blue-700 shadow"
                     : "bg-white text-blue-700 border border-blue-600 hover:bg-blue-50"

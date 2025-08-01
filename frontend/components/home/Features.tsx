@@ -1,31 +1,43 @@
 "use client";
 import { motion } from "framer-motion";
-import { Rocket, Users, ShieldCheck, BarChart3 } from "lucide-react";
+import { Wine, GraduationCap, Users, BarChart3, BookOpen, Shield } from "lucide-react";
 
 const features = [
   {
-    icon: Rocket,
+    icon: Wine,
+    color: "bg-purple-100 text-purple-600",
+    title: "Cocktail & Wine Mastery",
+    description: "Comprehensive training modules covering cocktail recipes, wine knowledge, and food pairing techniques with interactive assessments.",
+  },
+  {
+    icon: GraduationCap,
     color: "bg-blue-100 text-blue-600",
-    title: "Lightning-Fast Setup",
-    description: "Get your team onboarded in minutes, not days. No code, no hassle—just instant productivity.",
+    title: "Progressive Learning Paths",
+    description: "Structured training modules from beginner to advanced levels with prerequisites and skill-based progression tracking.",
   },
   {
     icon: Users,
-    color: "bg-purple-100 text-purple-600",
-    title: "Team Management",
-    description: "Effortlessly add, manage, and empower your staff with intuitive admin controls and real-time insights.",
-  },
-  {
-    icon: ShieldCheck,
     color: "bg-green-100 text-green-600",
-    title: "Enterprise-Grade Security",
-    description: "Your data is protected with best-in-class security, SSO, and granular access controls.",
+    title: "Multi-Location Management",
+    description: "Manage training across multiple restaurant locations with role-based access for admins, managers, and staff.",
   },
   {
     icon: BarChart3,
-    color: "bg-pink-100 text-pink-600",
-    title: "Actionable Analytics",
-    description: "Track progress, spot trends, and make smarter decisions with beautiful, real-time dashboards.",
+    color: "bg-orange-100 text-orange-600",
+    title: "Real-Time Analytics",
+    description: "Track employee progress, completion rates, and performance metrics with detailed reporting and insights.",
+  },
+  {
+    icon: BookOpen,
+    color: "bg-indigo-100 text-indigo-600",
+    title: "Rich Content Library",
+    description: "Access video tutorials, interactive quizzes, documents, and presentations tailored for hospitality training.",
+  },
+  {
+    icon: Shield,
+    color: "bg-red-100 text-red-600",
+    title: "Compliance & Certification",
+    description: "Ensure regulatory compliance with alcohol service laws and generate certificates for completed training modules.",
   },
 ];
 
@@ -42,11 +54,11 @@ export default function Features() {
         <rect width="800" height="400" fill="url(#dots)" />
       </svg>
       <div className="relative z-10 max-w-5xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 mb-4">What You Get</h2>
+        <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 mb-4">Complete Restaurant Training Solution</h2>
         <p className="text-lg text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-          Everything you need to run a modern, high-performing team—without the bloat.
+          Everything your restaurant needs to train staff on cocktails, wine, compliance, and hospitality excellence.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, i) => {
             const Icon = feature.icon;
             return (

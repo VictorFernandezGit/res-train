@@ -23,7 +23,7 @@ export default function Hero() {
           transition={{ duration: 0.7, ease: "easeOut" }}
           className="inline-block mb-4 px-4 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs tracking-widest uppercase shadow-sm"
         >
-          🚀 Next-Gen SaaS Platform
+          🍸 Restaurant Training Platform
         </motion.div>
         {/* Animated headline */}
         <motion.h1
@@ -33,7 +33,7 @@ export default function Hero() {
           className="text-4xl md:text-6xl font-extrabold tracking-tight text-gray-900 mb-6 drop-shadow-lg"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
-          Smarter Admin Tools for Fast-Moving Teams
+          Transform Your Restaurant Training
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 16 }}
@@ -41,9 +41,9 @@ export default function Hero() {
           transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
           className="text-lg md:text-2xl text-gray-600 mb-10 font-medium"
         >
-          The modern platform for scaling operations, empowering admins, and moving your business forward—faster.
+          Comprehensive training platform for cocktails, wine, and hospitality excellence. Get your staff certified faster with interactive modules and progress tracking.
         </motion.p>
-        {/* Techy SVG illustration (undraw.co, open source) */}
+        {/* Restaurant-themed SVG illustration */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -51,14 +51,25 @@ export default function Hero() {
           className="mb-10 w-full flex justify-center"
         >
           <svg width="340" height="180" viewBox="0 0 340 180" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-xl">
-            <rect x="20" y="40" width="300" height="100" rx="18" fill="#fff" stroke="#a5b4fc" strokeWidth="2" />
-            <rect x="40" y="60" width="80" height="60" rx="8" fill="#dbeafe" />
-            <rect x="140" y="60" width="160" height="20" rx="6" fill="#f1f5f9" />
-            <rect x="140" y="90" width="100" height="12" rx="4" fill="#f1f5f9" />
-            <rect x="140" y="110" width="60" height="12" rx="4" fill="#f1f5f9" />
-            <circle cx="60" cy="90" r="10" fill="#60a5fa" />
-            <circle cx="80" cy="90" r="10" fill="#a78bfa" />
-            <circle cx="100" cy="90" r="10" fill="#f472b6" />
+            {/* Training dashboard mockup */}
+            <rect x="20" y="30" width="300" height="120" rx="18" fill="#fff" stroke="#a5b4fc" strokeWidth="2" />
+            {/* Header */}
+            <rect x="30" y="40" width="280" height="20" rx="4" fill="#f8fafc" />
+            <rect x="35" y="45" width="120" height="10" rx="2" fill="#60a5fa" />
+            {/* Module cards */}
+            <rect x="35" y="70" width="80" height="60" rx="8" fill="#dbeafe" />
+            <rect x="125" y="70" width="80" height="60" rx="8" fill="#e0e7ff" />
+            <rect x="215" y="70" width="80" height="60" rx="8" fill="#fce7f3" />
+            {/* Wine glass icon */}
+            <circle cx="75" cy="95" r="8" fill="#8b5cf6" />
+            <rect x="73" y="103" width="4" height="15" fill="#8b5cf6" />
+            {/* Cocktail icon */}
+            <circle cx="165" cy="90" r="6" fill="#3b82f6" />
+            <rect x="159" y="96" width="12" height="3" fill="#3b82f6" />
+            <rect x="163" y="99" width="4" height="12" fill="#3b82f6" />
+            {/* Certificate icon */}
+            <rect x="245" y="85" width="20" height="15" rx="2" fill="#ec4899" />
+            <circle cx="248" cy="88" r="1" fill="#fff" />
           </svg>
         </motion.div>
         {/* CTAs */}
