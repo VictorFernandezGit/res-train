@@ -1,4 +1,4 @@
-# Restaurant Training Portal
+# Restaurant Training Portal ResiQ
 
 ## Project Overview
 A full-stack monorepo for a restaurant training portal, featuring authentication, cocktail and wine management, and a custom liquor database with integration.
